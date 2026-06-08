@@ -68,3 +68,18 @@ def test_redaction_does_not_mutate_unmatched_substrings():
     r = redact_with_consent(text)
     assert r.text == text
     assert r.log == []
+
+
+def test_log_entry_records_matched_span_length():
+    # The logged length is the length of the matched span, per the README.
+    text = "Contact me at alice@example.com or +1 555 123 4567"
+    r = redact_with_consent(text, allowed_types=["email"])
+    assert r.text == "Contact me at alice@example.com or [REDACTED:phone]"
+    assert r.log == [{"type": "phone", "length": len("+1 555 123 4567")}]
+
+
+def test_non_string_input_is_stringified():
+    # Anything stringifiable is coerced, mirroring the JS String(text) behavior.
+    r = redact_with_consent(1234567890)
+    assert r.text == "[REDACTED:phone]"
+    assert r.log[0]["type"] == "phone"

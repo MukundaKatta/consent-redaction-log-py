@@ -26,7 +26,7 @@ from consent_redaction_log import RedactionLog, redact_with_consent, summarize_r
 text = "Contact me at alice@example.com or +1 555 123 4567"
 result = redact_with_consent(text, allowed_types=["email"])
 result.text   # "Contact me at alice@example.com or [REDACTED:phone]"
-result.log    # [{"type": "phone", "length": 14}]
+result.log    # [{"type": "phone", "length": 15}]
 summarize_redactions(result.log)
 # {"phone": 1}
 

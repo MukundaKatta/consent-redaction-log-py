@@ -87,6 +87,23 @@ def test_none_original_is_treated_as_empty_string():
     assert rec["original_length"] == 0
 
 
+def test_dump_records_are_independent_copies():
+    # Mutating a dict returned by dump() must not corrupt the internal trail.
+    log = RedactionLog(clock=_fixed_clock())
+    log.record("f", "original", "[R]", "c")
+    snapshot = log.dump()
+    snapshot[0]["field"] = "MUTATED"
+    assert log.dump()[0]["field"] == "f"
+
+
+def test_record_stores_length_not_raw_value():
+    # The audit trail keeps the original's length but never the value itself.
+    log = RedactionLog(clock=_fixed_clock())
+    rec = log.record("user.message", "alice@example.com", "[REDACTED:email]", "c")
+    assert rec["original_length"] == len("alice@example.com")
+    assert "alice@example.com" not in rec.values()
+
+
 def test_default_clock_returns_iso_utc_string():
     log = RedactionLog()
     rec = log.record("f", "x", "[X]", "c")
